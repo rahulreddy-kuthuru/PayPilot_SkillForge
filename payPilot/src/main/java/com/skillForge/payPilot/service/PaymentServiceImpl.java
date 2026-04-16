@@ -4,9 +4,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.stereotype.Service;
+
 import com.skillForge.payPilot.dto.PaymentRequest;
 import com.skillForge.payPilot.dto.PaymentResponse;
 
+@Service
 public class PaymentServiceImpl implements PaymentService{
 
 	private final Map<String, PaymentResponse> intentRepo = new ConcurrentHashMap<>();
@@ -14,9 +17,8 @@ public class PaymentServiceImpl implements PaymentService{
 	@Override
 	public PaymentResponse createPaymentIntent(PaymentRequest req) {
 		
-		String intentId = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-		PaymentResponse response = new PaymentResponse(intentId, req.amount(), "CREATED", req.referenceId());
-		intentRepo.put(intentId, response);
+		PaymentResponse response = new PaymentResponse(req.merchantId(), req.amount(), req.referenceId(), req.currency());
+		intentRepo.put(req.merchantId(), response);
 		return response;
 	}
 

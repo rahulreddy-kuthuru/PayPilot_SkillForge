@@ -1,5 +1,10 @@
 package com.skillForge.payPilot.dto;
 
-public record Merchant(String id, String name, String email, KycStatus keycStatus) {
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+
+public record Merchant(String id, @NotBlank(message = "Name is a required field") String name,
+		@NotBlank(message = "Email is a required field") @Email(message = "Invalid email address") String email,
+		KycStatus keycStatus) {
 
 }

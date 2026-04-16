@@ -35,6 +35,9 @@ public class PaymentController {
 	@GetMapping("{id}/status")
 	public ResponseEntity<PaymentResponse> getStatsByIntentId(@PathVariable String id){
 		PaymentResponse res = paymentService.getStatusByIntentId(id);
+		if(res == null) {
+			return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
+		}
 		return new ResponseEntity<>(res, HttpStatus.OK);
 	}
 }

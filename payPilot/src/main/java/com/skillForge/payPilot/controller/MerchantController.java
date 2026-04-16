@@ -1,9 +1,7 @@
 package com.skillForge.payPilot.controller;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.Valid;
 
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.skillForge.payPilot.dto.KycStatus;
 import com.skillForge.payPilot.dto.Merchant;
-import com.skillForge.payPilot.dto.MerchantRequest;
 import com.skillForge.payPilot.service.MerchantService;
 
 @RestController
@@ -30,19 +27,16 @@ public class MerchantController {
 	
 	@Autowired
 	private MerchantService merchantService;
-
-	private final Map<String, Merchant> repository = new ConcurrentHashMap<>();
 	
 	@PostMapping
-	public ResponseEntity<Merchant> createMerchant(@Valid @RequestBody MerchantRequest merchantReq){
-		var merchant = new Merchant(UUID.randomUUID().toString(), merchantReq.businessName(), merchantReq.email(), KycStatus.PENDING);
-		repository.put(merchant.id(), merchant);
+	public ResponseEntity<Merchant> createMerchant(@Valid @RequestBody Merchant merchantReq){
+		var merchant = merchantService.createMerchant(UUID.randomUUID().toString(), merchantReq.name(), merchantReq.email(), KycStatus.PENDING);
 		return ResponseEntity.status(HttpStatus.CREATED).body(merchant);
 	}
 	
-	@GetMapping
+	@GetMapping("/{id}")
 	public ResponseEntity<Merchant> getMerchantById(@PathVariable String id){
-		return Optional.ofNullable(repository.get(id)).map(ResponseEntity :: ok).orElse(ResponseEntity.notFound().build());
+		return Optional.ofNullable(merchantService.getMerchantById(id)).map(ResponseEntity :: ok).orElse(ResponseEntity.notFound().build());
 	}
 	
 	@PatchMapping("{id}/kyc")
