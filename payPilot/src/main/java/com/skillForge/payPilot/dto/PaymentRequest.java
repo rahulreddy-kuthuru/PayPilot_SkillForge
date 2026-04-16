@@ -12,9 +12,9 @@ public record PaymentRequest(
 		@NotNull @DecimalMin("0.01")
 		BigDecimal amount,
 		
-		@NotBlank String merchantId,
+		@NotBlank(message = "merchantId is a required field") String merchantId,
 		
-		@NotBlank String referenceId,
+		@NotBlank(message = "referenceId is a required field") String referenceId,
 		
 		String currency
 		) {
