@@ -1,5 +1,6 @@
 package com.skillForge.payPilot.controller;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skillForge.payPilot.dto.KycHistory;
 import com.skillForge.payPilot.dto.KycStatus;
 import com.skillForge.payPilot.dto.Merchant;
 import com.skillForge.payPilot.service.MerchantService;
@@ -30,8 +32,12 @@ public class MerchantController {
 	
 	@PostMapping
 	public ResponseEntity<Merchant> createMerchant(@Valid @RequestBody Merchant merchantReq){
-		var merchant = merchantService.createMerchant(UUID.randomUUID().toString(), merchantReq.name(), merchantReq.email(), KycStatus.PENDING);
-		return ResponseEntity.status(HttpStatus.CREATED).body(merchant);
+		try {
+						var merchant = merchantService.createMerchant(merchantReq.merchantId(), merchantReq.name(), merchantReq.email(), KycStatus.PENDING);
+			return ResponseEntity.status(HttpStatus.CREATED).body(merchant);
+		} catch(Exception ex) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
 	}
 	
 	@GetMapping("/{id}")
@@ -48,5 +54,14 @@ public class MerchantController {
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
 		}
 	}
+	
+	@GetMapping("{id}/kyc/history")
+	public ResponseEntity<?> getKycHistory(@PathVariable String id){
+		List<KycHistory> history = merchantService.getKycHistory(id);
+		if(null == history) {
+			return ResponseEntity.noContent().build();
+			}
+		return ResponseEntity.ok(history);
+		}
 	
 }
