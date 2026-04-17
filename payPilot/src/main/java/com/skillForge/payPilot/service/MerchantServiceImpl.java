@@ -15,6 +15,8 @@ import com.skillForge.payPilot.aspect.AuditKycChange;
 import com.skillForge.payPilot.dto.KycHistory;
 import com.skillForge.payPilot.dto.KycStatus;
 import com.skillForge.payPilot.dto.Merchant;
+import com.skillForge.payPilot.exception.InvalidKycTransitionException;
+import com.skillForge.payPilot.exception.MerchantNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,33 +35,32 @@ public class MerchantServiceImpl implements MerchantService{
 	@Override
 	@AuditKycChange
 	public Merchant updateKycStatus(String id, KycStatus status) {
-		Merchant merchant = repository.get(id);
-		if(merchant == null) {
-			throw new RuntimeException("Merchant not found");
-		}
-		if(merchant.keycStatus() == KycStatus.VERIFIED && status == KycStatus.PENDING) {
-			throw new IllegalStateException("Can not convert a verified merchant into PENDING status");
-		}
-		Merchant updateMerchant = new Merchant(merchant.merchantId(), merchant.name(),merchant.email(), status);
-		repository.put(id, updateMerchant);
-		return updateMerchant;
+	    Merchant merchant = repository.get(id);
+	    if (merchant == null) {
+	        throw new MerchantNotFoundException("Merchant with ID " + id + " not found");
+	    }
+	    if (merchant.keycStatus() == KycStatus.VERIFIED && status == KycStatus.PENDING) {
+	        throw new InvalidKycTransitionException("Cannot convert a verified merchant into PENDING status");
+	    }
+	    Merchant updatedMerchant = new Merchant(merchant.merchantId(), merchant.name(), merchant.email(), status);
+	    repository.put(id, updatedMerchant);
+	    return updatedMerchant;
 	}
 
 	@Override
 	public Merchant createMerchant(String id, String name, String email, KycStatus status) {
-		try {			
-			var merchant = new Merchant(id, name, email, KycStatus.PENDING);
-			repository.put(merchant.merchantId(), merchant);
-			return merchant;
-		} catch(Exception ex) {
-			log.error("Error occured : " + ex);
-			return null;
-		}
+	    var merchant = new Merchant(id, name, email, KycStatus.PENDING);
+	    repository.put(merchant.merchantId(), merchant);
+	    return merchant;
 	}
 
 	@Override
 	public Merchant getMerchantById(String id) {
-		return Optional.ofNullable(repository.get(id)).orElse(null);
+	    Merchant merchant = repository.get(id);
+	    if (merchant == null) {
+	        throw new MerchantNotFoundException("Merchant with ID " + id + " not found");
+	    }
+	    return merchant;
 	}
 
 	@Override

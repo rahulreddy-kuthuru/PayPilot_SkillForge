@@ -31,37 +31,36 @@ public class MerchantController {
 	private MerchantService merchantService;
 	
 	@PostMapping
-	public ResponseEntity<Merchant> createMerchant(@Valid @RequestBody Merchant merchantReq){
-		try {
-						var merchant = merchantService.createMerchant(merchantReq.merchantId(), merchantReq.name(), merchantReq.email(), KycStatus.PENDING);
-			return ResponseEntity.status(HttpStatus.CREATED).body(merchant);
-		} catch(Exception ex) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+	public ResponseEntity<Merchant> createMerchant(@Valid @RequestBody Merchant merchantReq) {
+	    Merchant merchant = merchantService.createMerchant(
+	        merchantReq.merchantId(),
+	        merchantReq.name(),
+	        merchantReq.email(),
+	        KycStatus.PENDING
+	    );
+	    return ResponseEntity.status(HttpStatus.CREATED).body(merchant);
 	}
-	
+
 	@GetMapping("/{id}")
-	public ResponseEntity<Merchant> getMerchantById(@PathVariable String id){
-		return Optional.ofNullable(merchantService.getMerchantById(id)).map(ResponseEntity :: ok).orElse(ResponseEntity.notFound().build());
+	public ResponseEntity<Merchant> getMerchantById(@PathVariable String id) {
+	    Merchant merchant = merchantService.getMerchantById(id);
+	    return ResponseEntity.ok(merchant);
 	}
-	
+
 	@PatchMapping("{id}/kyc")
-	public ResponseEntity<Merchant> updateKycStatuc(@PathVariable String id, @RequestParam KycStatus status){
-		try {
-		Merchant updatedMerchant = merchantService.updateKycStatus(id, status);
-		return ResponseEntity.ok(updatedMerchant);
-		} catch(IllegalStateException ex) {
-			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-		}
+	public ResponseEntity<Merchant> updateKycStatus(@PathVariable String id, @RequestParam KycStatus status) {
+	    Merchant updatedMerchant = merchantService.updateKycStatus(id, status);
+	    return ResponseEntity.ok(updatedMerchant);
 	}
-	
+
 	@GetMapping("{id}/kyc/history")
-	public ResponseEntity<?> getKycHistory(@PathVariable String id){
-		List<KycHistory> history = merchantService.getKycHistory(id);
-		if(null == history) {
-			return ResponseEntity.noContent().build();
-			}
-		return ResponseEntity.ok(history);
-		}
+	public ResponseEntity<List<KycHistory>> getKycHistory(@PathVariable String id) {
+	    List<KycHistory> history = merchantService.getKycHistory(id);
+	    if (history.isEmpty()) {
+	        return ResponseEntity.noContent().build();
+	    }
+	    return ResponseEntity.ok(history);
+	}
+
 	
 }
